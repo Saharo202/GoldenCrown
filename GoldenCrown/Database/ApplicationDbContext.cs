@@ -44,8 +44,9 @@ namespace GoldenCrown.Database
             transactionEntity.Property(x => x.SenderAccountId).HasColumnName("sender_account_id").IsRequired();
             transactionEntity.Property(x => x.ReceiverAccountId).HasColumnName("receiver_account_id").IsRequired();
             transactionEntity.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
-            transactionEntity.HasOne<Account>().WithMany().HasForeignKey(x => x.SenderAccountId).OnDelete(DeleteBehavior.Cascade);
-            transactionEntity.HasOne<Account>().WithMany().HasForeignKey(x => x.ReceiverAccountId).OnDelete(DeleteBehavior.Cascade);
+            transactionEntity.Property(x => x.Amount).HasColumnName("amount").IsRequired();
+            transactionEntity.HasOne<Account>().WithMany().HasForeignKey(x => x.SenderAccountId).OnDelete(DeleteBehavior.NoAction);
+            transactionEntity.HasOne<Account>().WithMany().HasForeignKey(x => x.ReceiverAccountId).OnDelete(DeleteBehavior.NoAction);
 
 
         }
