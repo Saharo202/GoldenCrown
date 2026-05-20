@@ -3,6 +3,7 @@ using GoldenCrown.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Storage.Json;
 
 namespace GoldenCrown.Controllers
 {
@@ -20,6 +21,11 @@ namespace GoldenCrown.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
+            if (ModelState.IsValid == false)
+            {
+                return BadRequest(ModelState);
+            }
+
             var result = await _userService.RegisterAsync(request.Login,request.Name,request.Password);
             if(result)
             {
