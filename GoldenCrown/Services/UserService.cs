@@ -55,7 +55,7 @@ namespace GoldenCrown.Services
                 ExpiresAt = DateTime.UtcNow.AddHours(1),
             };
 
-            var existingSession = await _context.Sessions.FirstOrDefaultAsync(x = x => x.UserId == user.Id);
+            var existingSession = await _context.Sessions.FirstOrDefaultAsync(x => x.UserId == user.Id);
             if (existingSession != null)
             {
                 existingSession.Token = session.Token;

@@ -1,7 +1,9 @@
 
 using GoldenCrown.Database;
 using GoldenCrown.Services;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GoldenCrown
 {
