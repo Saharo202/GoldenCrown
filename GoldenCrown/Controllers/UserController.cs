@@ -1,4 +1,4 @@
-﻿using GoldenCrown.DTOs;
+﻿using GoldenCrown.DTOs.Users;
 using GoldenCrown.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;

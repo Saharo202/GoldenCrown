@@ -1,4 +1,4 @@
-﻿namespace GoldenCrown.DTOs
+﻿namespace GoldenCrown.DTOs.Users
 {
     public class LoginResponse
     {
