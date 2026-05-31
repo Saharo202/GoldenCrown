@@ -10,10 +10,9 @@ namespace GoldenCrown.Services
         private readonly ApplicationDbContext _context;
         private readonly IAccountService _accountService;
 
-        public AccountService(ApplicationDbContext context, IAccountService accountService)
+        public AccountService(ApplicationDbContext context)
         {
             _context = context;
-            _accountService = accountService;
         }
 
         public async Task CreateAccountAsync(string login)
@@ -32,8 +31,6 @@ namespace GoldenCrown.Services
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-
-            await _accountService.CreateAccountAsync(login);
 
         }
     }
