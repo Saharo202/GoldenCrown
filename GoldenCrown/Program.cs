@@ -20,6 +20,18 @@ namespace GoldenCrown
             builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));            
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IAccountService, AccountService>();
+            builder.Services.AddScoped<IFinanceService, FinanceService>();
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    // ¬ременно разрешить все источники (дл€ разработки)
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
 
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -36,6 +48,8 @@ namespace GoldenCrown
                     options.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
                 });
             }
+
+            app.UseCors("AllowFrontend");
 
             app.UseHttpsRedirection();
 

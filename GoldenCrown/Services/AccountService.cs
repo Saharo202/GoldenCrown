@@ -29,7 +29,7 @@ namespace GoldenCrown.Services
                 Balance = 0,
             };
 
-            _context.Users.Add(user);
+            _context.Accounts.Add(account);
             await _context.SaveChangesAsync();
 
         }

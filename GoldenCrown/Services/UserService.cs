@@ -7,10 +7,12 @@ namespace GoldenCrown.Services
     public class UserService : IUserService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IAccountService _accountService;
 
-        public UserService(ApplicationDbContext context)
+        public UserService(ApplicationDbContext context, IAccountService accountService)
         {
             _context = context;
+            _accountService = accountService;
         }
         public async Task<Result> RegisterAsync(string login, string name, string password)
         {
@@ -34,6 +36,8 @@ namespace GoldenCrown.Services
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
+
+            await _accountService.CreateAccountAsync(login);
 
             return Result.Success();
 
