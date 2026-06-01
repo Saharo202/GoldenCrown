@@ -1,5 +1,7 @@
 ﻿using GoldenCrown.Database;
+using GoldenCrown.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Transactions;
 
 namespace GoldenCrown.Services
 {
@@ -38,6 +40,45 @@ namespace GoldenCrown.Services
             account!.Balance += amount;
             await _dbContext.SaveChangesAsync();
             return Result.Success();
+        }
+
+        public async Task<Result> TransferAsync(string fromToken, string toLogin, decimal amount)
+        {
+            var fromSession = await _dbContext.Sessions.FirstOrDefaultAsync(s => s.Token == fromToken);
+
+            if (fromSession == null) 
+            {
+                return Result.Failure("Пользователь не авторизован");
+            }
+
+            var fromUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == fromSession.UserId);
+            var fromAccount = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.UserId == fromUser!.Id);
+            var toUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Login == toLogin);
+            if(toUser == null)
+            {
+                return Result.Failure("Получатель не найден");
+            }
+            var toAccount = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.UserId == toUser!.Id);
+
+            if(fromAccount!.Balance < amount)
+            {
+                return Result.Failure("Недостаточно средств");
+            }
+            fromAccount!.Balance -= amount;
+            toAccount!.Balance += amount;
+
+            var transaction = new Models.Transaction
+            {
+                ReceiverAccountId = toAccount.Id,
+                SenderAccountId = fromAccount.Id,
+                Amount = amount,
+                CreatedAt = DateTime.UtcNow
+            };
+            _dbContext.Transactions.Add(transaction);
+
+            await _dbContext.SaveChangesAsync();
+            return Result.Success();
+
         }
     }
 }
