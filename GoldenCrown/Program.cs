@@ -1,4 +1,5 @@
 
+using GoldenCrown.BackgroundServices;
 using GoldenCrown.Database;
 using GoldenCrown.Middleware;
 using GoldenCrown.Services;
@@ -23,6 +24,7 @@ namespace GoldenCrown
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IAccountService, AccountService>();
             builder.Services.AddScoped<IFinanceService, FinanceService>();
+            builder.Services.AddHostedService<SessionCleanupService>();
 
             builder.Services.AddCors(options =>
             {
