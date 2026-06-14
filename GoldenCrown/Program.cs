@@ -20,7 +20,7 @@ namespace GoldenCrown
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-            builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));            
+            builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IAccountService, AccountService>();
             builder.Services.AddScoped<IFinanceService, FinanceService>();
@@ -30,7 +30,6 @@ namespace GoldenCrown
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                    // ¬ременно разрешить все источники (дл€ разработки)
                     policy.AllowAnyOrigin()
                           .AllowAnyMethod()
                           .AllowAnyHeader();
@@ -67,15 +66,39 @@ namespace GoldenCrown
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            using (var scope = app.Services.CreateScope())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI(options =>
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                var retries = 10;
+
+                while (retries > 0)
                 {
-                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-                });
+                    try
+                    {
+                        db.Database.Migrate();
+                        break;
+                    }
+                    catch
+                    {
+                        retries--;
+
+                        if (retries == 0)
+                            throw;
+
+                        Thread.Sleep(5000);
+                    }
+                }
             }
+
+            // Configure the HTTP request pipeline.
+
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+            });
+
 
             app.UseCors("AllowFrontend");
 

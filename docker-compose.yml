@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: goldencrown-mssql
+
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourStrong!Passw0rd"
+
+    ports:
+      - "1433:1433"
+
+    volumes:
+      - mssql_data:/var/opt/mssql
+
+  api:
+    build:
+      context: ./GoldenCrown
+      dockerfile: Dockerfile
+
+    container_name: goldencrown-api
+
+    depends_on:
+      - mssql
+
+    ports:
+      - "8080:8080"
+
+    restart: unless-stopped
+
+volumes:
+  mssql_data:
