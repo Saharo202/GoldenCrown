@@ -41,13 +41,16 @@ namespace GoldenCrown.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> login([FromBody] LoginRequest request, [FromServices] IValidator<LoginRequest> validator)
         {
-            var validationResult = validator.Validate(request);
+            var validationResult = validator.Validate(command);
 
             if (!validationResult.IsValid)
             {
                 return BadRequest(validationResult.ToDictionary());
             }
-            var result = await _userService.LoginAsync(request.Login, request.Password);
+
+            var command = new UserLoginCommand(command.Login, command.Password);
+
+            var result = await _userService.LoginAsync(command.Login, command.Password);
             if (result)
             {
                 return Ok(new { Token = result.Value });

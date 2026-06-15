@@ -23,6 +23,12 @@ namespace GoldenCrown
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+           
+           builder.Services.AddMediatR(cfg =>
+           {
+               cfg.RegisterServicesFromAssemblies(typeof(Program).Assembly);
+           });
+           
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IAccountService, AccountService>();
             builder.Services.AddScoped<IFinanceService, FinanceService>();
