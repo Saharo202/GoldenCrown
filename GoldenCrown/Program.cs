@@ -81,6 +81,7 @@ namespace GoldenCrown
                     try
                     {
                         db.Database.Migrate();
+                        DbInitializer.Initialize(db);
                         break;
                     }
                     catch (Exception ex)

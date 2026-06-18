@@ -26,8 +26,6 @@ namespace GoldenCrown.Database
             userEntity.Property(x => x.Name).HasColumnName("name").IsRequired();
             userEntity.Property(x => x.Password).HasColumnName("password").IsRequired();
 
-            SeedUserData(userEntity);
-
             var accountEntity = modelBuilder.Entity<Account>().ToTable("accounts");
             accountEntity.HasKey(x => x.Id);
             accountEntity.Property(x => x.Id).HasColumnName("id").UseIdentityColumn();
@@ -41,8 +39,6 @@ namespace GoldenCrown.Database
                 x.UserId,
                 x.Currency
             }).IsUnique();
-
-            SeedAccountData(accountEntity);
 
             var sessionEntity = modelBuilder.Entity<Session>().ToTable("sessions");
             sessionEntity.HasKey(x => x.UserId);
@@ -85,106 +81,6 @@ namespace GoldenCrown.Database
                 .HasColumnName("updated_at")
                 .IsRequired();
 
-            SeedExchangeRates(rateEntity);
-
-
-
         }
-
-        private void SeedUserData(EntityTypeBuilder<User> userEntity)
-        {
-            userEntity.HasData
-                (
-                new User
-                {
-                    Id = 1,
-                    Login = "admin",
-                    Name = "Administrator",
-                    Password = "admin"
-                },
-                new User
-                {
-                    Id = 2,
-                    Login = "user",
-                    Name = "Regular User",
-                    Password = "user"
-                }
-                );
-
-        }
-
-        private void SeedAccountData(EntityTypeBuilder<Account> accountEntity) 
-        {
-            accountEntity.HasData(
-                new Account
-                {
-                    Id = 1,
-                    UserId = 1,
-                    Currency = Currency.RUB,
-                    Balance = 0
-                },
-                new Account
-                {
-                    Id = 2,
-                    UserId = 2,
-                    Currency = Currency.RUB,
-                    Balance = 0
-                });
-        }
-
-        private void SeedExchangeRates(EntityTypeBuilder<ExchangeRate> exchangeRateEntity)
-        {
-            exchangeRateEntity.HasData(
-                new ExchangeRate
-                {
-                    Id = 1,
-                    FromCurrency = Currency.RUB,
-                    ToCurrency = Currency.USD,
-                    Rate = 0.0125m,
-                    UpdatedAt = new DateTime(2026, 1, 1)
-                },
-                new ExchangeRate
-                {
-                    Id = 2,
-                    FromCurrency = Currency.USD,
-                    ToCurrency = Currency.RUB,
-                    Rate = 80m,
-                    UpdatedAt = new DateTime(2026, 1, 1)
-                },
-                new ExchangeRate
-                {
-                    Id = 3,
-                    FromCurrency = Currency.RUB,
-                    ToCurrency = Currency.EUR,
-                    Rate = 0.011m,
-                    UpdatedAt = new DateTime(2025, 1, 1)
-                },
-                new ExchangeRate
-                {
-                    Id = 4,
-                    FromCurrency = Currency.EUR,
-                    ToCurrency = Currency.RUB,
-                    Rate = 90m,
-                    UpdatedAt = new DateTime(2025, 1, 1)
-                },
-                new ExchangeRate
-                {
-                    Id = 5,
-                    FromCurrency = Currency.USD,
-                    ToCurrency = Currency.EUR,
-                    Rate = 0.91m,
-                    UpdatedAt = new DateTime(2025, 1, 1)
-                },
-                new ExchangeRate
-                {
-                    Id = 6,
-                    FromCurrency = Currency.EUR,
-                    ToCurrency = Currency.USD,
-                    Rate = 1.10m,
-                    UpdatedAt = new DateTime(2025, 1, 1)
-                }
-            );
-        }
-
     }
 }
