@@ -1,10 +1,9 @@
 ﻿using FluentValidation;
 using GoldenCrown.DTOs.Users;
-using GoldenCrown.Services;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
+using GoldenCrown.Features.User.UserLogin;
+using GoldenCrown.Features.User.UserRegister;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Storage.Json;
 
 namespace GoldenCrown.Controllers
 {
@@ -12,12 +11,13 @@ namespace GoldenCrown.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IUserService _userService;
+        private readonly IMediator _mediator;
 
-        public UserController(IUserService userService)
+        public UserController(IMediator mediator)
         {
-            _userService = userService;
+            _mediator = mediator;
         }
+
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request, [FromServices] IValidator<RegisterRequest> validator)
@@ -29,8 +29,8 @@ namespace GoldenCrown.Controllers
                 return BadRequest(validationResult.ToDictionary());
             }
 
-            var result = await _userService.RegisterAsync(request.Login,request.Name,request.Password);
-            if(result)
+            var command = new UserRegisterCommand(request.Login, request.Name, request.Password);
+            var result = await _mediator.Send(command); if (result)
             {
                 return Ok();
                 
@@ -41,17 +41,17 @@ namespace GoldenCrown.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> login([FromBody] LoginRequest request, [FromServices] IValidator<LoginRequest> validator)
         {
-            var validationResult = validator.Validate(command);
+            var validationResult = validator.Validate(request);
 
             if (!validationResult.IsValid)
             {
                 return BadRequest(validationResult.ToDictionary());
             }
 
-            var command = new UserLoginCommand(command.Login, command.Password);
+            var command = new UserLoginCommand(request.Login, request.Password);
+            var result = await _mediator.Send(command);
 
-            var result = await _userService.LoginAsync(command.Login, command.Password);
-            if (result)
+            if (result.IsSuccess)
             {
                 return Ok(new { Token = result.Value });
             }

@@ -4,10 +4,7 @@ using GoldenCrown.BackgroundServices;
 using GoldenCrown.Database;
 using GoldenCrown.DTOs.Users;
 using GoldenCrown.Middleware;
-using GoldenCrown.Services;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 
 namespace GoldenCrown
@@ -28,10 +25,6 @@ namespace GoldenCrown
            {
                cfg.RegisterServicesFromAssemblies(typeof(Program).Assembly);
            });
-           
-            builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IAccountService, AccountService>();
-            builder.Services.AddScoped<IFinanceService, FinanceService>();
 
             builder.Services.AddValidatorsFromAssemblyContaining<LoginRequest>();
 
@@ -90,8 +83,10 @@ namespace GoldenCrown
                         db.Database.Migrate();
                         break;
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Console.WriteLine(ex);
+
                         retries--;
 
                         if (retries == 0)

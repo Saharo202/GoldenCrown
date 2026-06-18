@@ -1,7 +1,9 @@
-﻿namespace GoldenCrown.DTOs.Finance
+﻿using GoldenCrown.Features.Finance.GetBalance;
+
+namespace GoldenCrown.DTOs.Finance
 {
     public class BalanceResponce
     {
-        public decimal Balance { get; set; }
+        public List<BalanceItem> Accounts { get; set; }
     }
 }

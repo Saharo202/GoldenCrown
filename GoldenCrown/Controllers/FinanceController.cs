@@ -1,8 +1,15 @@
 ﻿using FluentValidation;
 using GoldenCrown.Attributes;
 using GoldenCrown.DTOs.Finance;
-using GoldenCrown.Services;
+using GoldenCrown.Features.Finance.Deposit;
+using GoldenCrown.Features.Finance.GetBalance;
+using GoldenCrown.Features.Finance.GetTransactionHistory;
+using GoldenCrown.Features.Finance.Transfer;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic;
+using GoldenCrown.Features.Finance.OpenCurrencyAccount;
+using GoldenCrown.Features.Finance.ConvertCurrency;
 
 namespace GoldenCrown.Controllers
 {
@@ -11,29 +18,28 @@ namespace GoldenCrown.Controllers
     [MyAuthorize]
     public class FinanceController : Controller
     {
-        private readonly IFinanceService _financeService;
+        private readonly IMediator _mediator;
 
-        public FinanceController(IFinanceService financeService)
+        public FinanceController(IMediator mediator)
         {
-            _financeService = financeService;
+            _mediator = mediator;
         }
 
         [HttpGet("balance")]
         public async Task<IActionResult> GetBalanceAsync()
         {
-            var userId = HttpContext.Items["UserId"] as int?;
-            var balanceResult = await _financeService.GetBalanceAsync(userId!.Value);
+            var balanceResult = await _mediator.Send(new GetBalanceQuery(GetUserid()));
 
             if (balanceResult.IsSuccess)
             {
                 return Ok(new BalanceResponce
                 {
-                    Balance = balanceResult.Value
+                    Accounts = balanceResult.Value
                 });
             }
-            
+
             return BadRequest(new { Message = balanceResult.ErrorMessage });
-            
+
         }
 
         [HttpPost("deposit")]
@@ -45,30 +51,19 @@ namespace GoldenCrown.Controllers
             {
                 return BadRequest(validationResult.ToDictionary());
             }
-            return Ok();            
-        }
-
-        [HttpPost("transfer")]
-        public async Task<IActionResult> TransferAsync([FromBody] TransferRequest request, IValidator<TransferRequest> validator) 
-        {
-
-            var validatorResult = await validator.ValidateAsync(request);
-            if (!validatorResult.IsValid)
-            {
-                return BadRequest(validatorResult.ToDictionary());
-            }
-
-            var userId = HttpContext.Items["UserId"] as int?;
-            var transferResult = await _financeService.TransferAsync(userId!.Value, request.ReceiverLogin, request.Amount);
-            if (transferResult.IsSuccess)
+            var result = await _mediator.Send(new DepositCommand(
+                GetUserid(),
+                request.Currency,
+                request.Amount));
+            if (result.IsSuccess)
             {
                 return Ok();
             }
-            return BadRequest(new {Message = transferResult.ErrorMessage});
+            return BadRequest(new { Message = result.ErrorMessage });
         }
 
-        [HttpGet("history")]
-        public async Task<IActionResult> GetTransactionHistoryAcync([FromQuery]TransactionHistoryRequest request, IValidator<TransactionHistoryRequest> validator)
+        [HttpPost("transfer")]
+        public async Task<IActionResult> TransferAsync([FromBody] TransferRequest request, IValidator<TransferRequest> validator)
         {
             var validationResult = await validator.ValidateAsync(request);
             if (!validationResult.IsValid)
@@ -76,13 +71,83 @@ namespace GoldenCrown.Controllers
                 return BadRequest(validationResult.ToDictionary());
             }
 
-            var userId = HttpContext.Items["UserId"] as int?;
-            var historyResult = await _financeService.GetTransactionHistoryAsync(userId!.Value, request.From, request.To, request.Offset, request.Limit);
+            var transferResult = await _mediator.Send(new TransferCommand(
+                GetUserid(),
+                request.ReceiverLogin,
+                request.Amount,
+                request.Currency));
+            if (transferResult.IsSuccess)
+            {
+                return Ok();
+            }
+
+            return BadRequest(new { Message = transferResult.ErrorMessage });
+        }
+
+        [HttpGet("history")]
+        public async Task<IActionResult> GetTransactionHistoryAcync([FromQuery] TransactionHistoryRequest request, IValidator<TransactionHistoryRequest> validator)
+        {
+            var validationResult = await validator.ValidateAsync(request);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.ToDictionary());
+            }
+
+            var historyResult = await _mediator.Send(new GetTransactionHistoryQuery(GetUserid(), request.From, request.To, request.Offset, request.Limit));
             if (historyResult.IsSuccess)
             {
                 return Ok(historyResult.Value);
             }
-            return BadRequest(new {Message = historyResult.ErrorMessage});
+            return BadRequest(new { Message = historyResult.ErrorMessage });
+        }
+
+        [HttpPost("createdAccount")]
+        public async Task<IActionResult> OpenCurrencyAccountAsync(
+        [FromBody] OpenCurrencyAccountRequest request)
+        {
+            var result = await _mediator.Send(
+                new OpenCurrencyAccountCommand(
+                    GetUserid(),
+                    request.Currency));
+
+            if (result.IsSuccess)
+            {
+                return Ok();
+            }
+
+            return BadRequest(new
+            {
+                Message = result.ErrorMessage
+            });
+        }
+
+        [HttpPost("convert")]
+        public async Task<IActionResult> ConvertAsync([FromBody] ConvertCurrencyRequest request)
+        {
+            var result = await _mediator.Send(new ConvertCurrencyCommand(
+                        GetUserid(),
+                        request.FromCurrency,
+                        request.ToCurrency,
+                        request.Amount));
+
+            if (result.IsSuccess)
+            {
+                return Ok();
+            }
+
+            return BadRequest(
+                new
+                {
+                    Message = result.ErrorMessage
+                });
+        }
+
+        internal int GetUserid()
+        {
+            var userId = HttpContext.Items[Constants.UserIdContextParameter] as int?;
+
+            return userId!.Value;
         }
     }
 }
+
