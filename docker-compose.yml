@@ -1,0 +1,22 @@
+version: '3.9'
+services:
+ mssql:
+  image: mcr.microsoft.com/mssql/server:2022-latest
+  environment:
+   ACCEPT_EULA: Y
+   SA_PASSWORD: YourStrong!Passw0rd
+  ports: ['1433:1433']
+ rabbitmq:
+  image: rabbitmq:3-management
+  ports: ['5672:5672','15672:15672']
+ api:
+  build: ./GoldenCrown
+  depends_on: [mssql,rabbitmq]
+  ports: ['8080:8080']
+ consumer:
+  image: mcr.microsoft.com/dotnet/sdk:10.0
+  working_dir: /app
+  volumes:
+   - ./TaxInspectionConsumer:/app
+  command: dotnet run
+  depends_on: [rabbitmq]
