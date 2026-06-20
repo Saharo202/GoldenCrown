@@ -10,12 +10,12 @@ namespace GoldenCrown.Features.Finance.Transfer
         public decimal Amount { get; set; }
         public Currency Currency { get; set; }
 
-        public TransferCommand(int fromUserId, string toLogin, decimal amount, Currency Currency)
+        public TransferCommand(int fromUserId, string toLogin, decimal amount, Currency currency)
         {
             FromUserId = fromUserId;
             ToLogin = toLogin;
             Amount = amount;
-            Currency = Currency;
+            Currency = currency;
         }
     }
 }

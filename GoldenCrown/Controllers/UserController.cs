@@ -30,12 +30,13 @@ namespace GoldenCrown.Controllers
             }
 
             var command = new UserRegisterCommand(request.Login, request.Name, request.Password);
-            var result = await _mediator.Send(command); if (result)
+            var result = await _mediator.Send(command); 
+            if (result)
             {
                 return Ok();
                 
             }
-            return BadRequest(new { Message = "User registration failde" });
+            return BadRequest(result.ErrorMessage);
         }
 
         [HttpPost("login")]
@@ -55,7 +56,7 @@ namespace GoldenCrown.Controllers
             {
                 return Ok(new { Token = result.Value });
             }
-            return NotFound();
+            return NotFound(result.ErrorMessage);
         } 
     }
 }

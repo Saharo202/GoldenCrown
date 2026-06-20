@@ -10,7 +10,7 @@ namespace GoldenCrown.Features.User.UserLogin
         public UserLoginCommand(string login, string password)
 		{
 			Login = login;
-			Password = Password;
+			Password = password;
 		}
 	}
 
